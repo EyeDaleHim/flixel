@@ -544,12 +544,14 @@ class FlxObject extends FlxBasic
 	/**
 	 * X position of the upper left corner of this object in world space.
 	 */
-	public var x(default, set):Float = 0;
+	@:isVar
+	public var x(get, set):Float = 0;
 
 	/**
 	 * Y position of the upper left corner of this object in world space.
 	 */
-	public var y(default, set):Float = 0;
+	@:isVar
+	public var y(get, set):Float = 0;
 
 	/**
 	 * The width of this object's hitbox. For sprites, use `offset` to control the hitbox position.
@@ -1363,6 +1365,18 @@ class FlxObject extends FlxBasic
 			LabelValuePair.weak("visible", visible),
 			LabelValuePair.weak("velocity", velocity)
 		]);
+	}
+
+	@:noCompletion
+	function get_x():Float
+	{
+		return x;
+	}
+	
+	@:noCompletion
+	function get_y():Float
+	{
+		return y;
 	}
 
 	@:noCompletion
