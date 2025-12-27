@@ -115,6 +115,21 @@ class FlxBasic implements IFlxDestroyable
 	}
 
 	/**
+	 * Has a component by class.
+	 */
+	public function hasComponent<T:FlxComponent>(cls:Class<T>):Bool
+	{
+		if (components == null)
+			return false;
+		for (comp in components)
+		{
+			if (Std.isOfType(comp, cls))
+				return true;
+		}
+		return false;
+	}
+
+	/**
 	 * **WARNING:** A destroyed `FlxBasic` can't be used anymore.
 	 * It may even cause crashes if it is still part of a group or state.
 	 * You may want to use `kill()` instead if you want to disable the object temporarily only and `revive()` it later.

@@ -722,14 +722,14 @@ class FlxTypedSpriteGroup<T:FlxSprite> extends FlxSprite
 	{
 		if (exists && x != Value)
 			transformChildren(xTransform, Value - x);// offset
-		return x = Value;
+		return super.set_x(Value);
 	}
 
 	override function set_y(Value:Float):Float
 	{
 		if (exists && y != Value)
 			transformChildren(yTransform, Value - y);// offset
-		return y = Value;
+		return super.set_y(Value);
 	}
 
 	override function set_angle(Value:Float):Float

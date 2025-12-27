@@ -5,6 +5,7 @@ import flixel.math.FlxPoint;
 import flixel.math.FlxRect;
 import flixel.math.FlxVelocity;
 import flixel.path.FlxPath;
+import flixel.system.ecs.FlxPositionComponent;
 import flixel.tile.FlxBaseTilemap;
 import flixel.util.FlxAxes;
 import flixel.util.FlxColor;
@@ -544,12 +545,12 @@ class FlxObject extends FlxBasic
 	/**
 	 * X position of the upper left corner of this object in world space.
 	 */
-	public var x(default, set):Float = 0;
+	public var x(get, set):Float;
 
 	/**
 	 * Y position of the upper left corner of this object in world space.
 	 */
-	public var y(default, set):Float = 0;
+	public var y(get, set):Float;
 
 	/**
 	 * The width of this object's hitbox. For sprites, use `offset` to control the hitbox position.
@@ -767,8 +768,7 @@ class FlxObject extends FlxBasic
 	{
 		super();
 
-		this.x = x;
-		this.y = y;
+		addComponent(new FlxPositionComponent(x, y));
 		this.width = width;
 		this.height = height;
 
@@ -1368,13 +1368,13 @@ class FlxObject extends FlxBasic
 	@:noCompletion
 	function set_x(value:Float):Float
 	{
-		return x = value;
+		return getComponent(FlxPositionComponent).x = value;
 	}
 
 	@:noCompletion
 	function set_y(value:Float):Float
 	{
-		return y = value;
+		return getComponent(FlxPositionComponent).y = value;
 	}
 
 	@:noCompletion
@@ -1403,6 +1403,18 @@ class FlxObject extends FlxBasic
 		#end
 
 		return height = value;
+	}
+
+	@:noCompletion
+	function get_x():Float
+	{
+		return getComponent(FlxPositionComponent).x;
+	}
+	
+	@:noCompletion
+	function get_y():Float
+	{
+		return getComponent(FlxPositionComponent).y;
 	}
 
 	@:noCompletion

@@ -1731,8 +1731,6 @@ class FlxSprite extends FlxObject
 
 interface IFlxSprite extends IFlxBasic
 {
-	var x(default, set):Float;
-	var y(default, set):Float;
 	var alpha(default, set):Float;
 	var angle(default, set):Float;
 	var facing(default, set):FlxDirectionFlags;
