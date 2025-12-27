@@ -1,6 +1,7 @@
 package flixel;
 
 import flixel.group.FlxContainer;
+import flixel.system.ecs.FlxComponent;
 import flixel.util.FlxDestroyUtil;
 import flixel.util.FlxStringUtil;
 
@@ -63,6 +64,12 @@ class FlxBasic implements IFlxDestroyable
 	public var cameras(get, set):Array<FlxCamera>;
 
 	/**
+	 * The list of components attached to this object.
+	 * Initialized lazily.
+	 */
+	public var components(default, null):Array<FlxComponent>;
+
+	/**
 	 * Enum that informs the collision system which type of object this is (to avoid expensive type casting).
 	 */
 	@:noCompletion
@@ -78,6 +85,34 @@ class FlxBasic implements IFlxDestroyable
 	public var container(get, null):Null<FlxContainer>;
 
 	public function new() {}
+
+	/**
+	 * Adds a component.
+	 */
+	public function addComponent<T:FlxComponent>(component:T):T
+	{
+		if (components == null)
+			components = [];
+			
+		components.push(component);
+		component.setParent(this);
+		return component;
+	}
+	
+	/**
+	 * Gets a component by class.
+	 */
+	public function getComponent<T:FlxComponent>(cls:Class<T>):T
+	{
+		if (components == null)
+			return null;
+		for (comp in components)
+		{
+			if (Std.isOfType(comp, cls))
+				return cast comp;
+		}
+		return null;
+	}
 
 	/**
 	 * **WARNING:** A destroyed `FlxBasic` can't be used anymore.
@@ -97,6 +132,12 @@ class FlxBasic implements IFlxDestroyable
 		container = null;
 		exists = false;
 		_cameras = null;
+		if (components != null)
+		{
+			for (comp in components)
+				comp.destroy();
+			components = null;
+		}
 	}
 
 	/**
@@ -130,6 +171,13 @@ class FlxBasic implements IFlxDestroyable
 		#if FLX_DEBUG
 		activeCount++;
 		#end
+		if (components != null && active)
+		{
+			for (comp in components)
+			{
+				comp.update(elapsed);
+			}
+		}
 	}
 
 	/**
@@ -141,6 +189,13 @@ class FlxBasic implements IFlxDestroyable
 		#if FLX_DEBUG
 		visibleCount++;
 		#end
+		if (components != null && visible)
+		{
+			for (comp in components)
+			{
+				comp.draw();
+			}
+		}
 	}
 
 	public function toString():String
