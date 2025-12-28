@@ -186,13 +186,6 @@ class FlxBasic implements IFlxDestroyable
 		#if FLX_DEBUG
 		activeCount++;
 		#end
-		if (components != null && active)
-		{
-			for (comp in components)
-			{
-				comp.update(elapsed);
-			}
-		}
 	}
 
 	/**
@@ -204,13 +197,6 @@ class FlxBasic implements IFlxDestroyable
 		#if FLX_DEBUG
 		visibleCount++;
 		#end
-		if (components != null && visible)
-		{
-			for (comp in components)
-			{
-				comp.draw();
-			}
-		}
 	}
 
 	public function toString():String

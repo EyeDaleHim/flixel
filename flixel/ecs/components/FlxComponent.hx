@@ -17,16 +17,6 @@ class FlxComponent implements IFlxDestroyable
     public function new() {}
 
     /**
-     * Hook called by FlxBasic.update()
-     */
-    public function update(elapsed:Float):Void {}
-
-    /**
-     * Hook called by FlxBasic.draw()
-     */
-    public function draw():Void {}
-
-    /**
      * Internal lifecycle hook for attachment logic.
      */
     @:allow(flixel.FlxBasic)
