@@ -1,4 +1,4 @@
-package flixel.system.ecs;
+package flixel.ecs.components;
 
 /**
  * A component representing a 2D position.

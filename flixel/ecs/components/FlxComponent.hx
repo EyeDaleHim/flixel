@@ -1,4 +1,4 @@
-package flixel.system.ecs;
+package flixel.ecs.components;
 
 import flixel.FlxBasic;
 import flixel.util.FlxDestroyUtil;
