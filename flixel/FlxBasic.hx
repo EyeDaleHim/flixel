@@ -1,7 +1,7 @@
 package flixel;
 
 import flixel.group.FlxContainer;
-import flixel.system.ecs.FlxComponent;
+import flixel.ecs.components.FlxComponent;
 import flixel.util.FlxDestroyUtil;
 import flixel.util.FlxStringUtil;
 

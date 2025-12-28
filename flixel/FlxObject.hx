@@ -5,7 +5,8 @@ import flixel.math.FlxPoint;
 import flixel.math.FlxRect;
 import flixel.math.FlxVelocity;
 import flixel.path.FlxPath;
-import flixel.system.ecs.FlxPositionComponent;
+import flixel.ecs.components.FlxPositionComponent;
+import flixel.ecs.components.FlxSizeComponent;
 import flixel.tile.FlxBaseTilemap;
 import flixel.util.FlxAxes;
 import flixel.util.FlxColor;
@@ -555,13 +556,11 @@ class FlxObject extends FlxBasic
 	/**
 	 * The width of this object's hitbox. For sprites, use `offset` to control the hitbox position.
 	 */
-	@:isVar
 	public var width(get, set):Float;
 
 	/**
 	 * The height of this object's hitbox. For sprites, use `offset` to control the hitbox position.
 	 */
-	@:isVar
 	public var height(get, set):Float;
 
 	/**
@@ -769,6 +768,7 @@ class FlxObject extends FlxBasic
 		super();
 
 		addComponent(new FlxPositionComponent(x, y));
+		addComponent(new FlxSizeComponent(width, height));
 		this.width = width;
 		this.height = height;
 
@@ -1388,7 +1388,7 @@ class FlxObject extends FlxBasic
 		}
 		#end
 
-		return width = value;
+		return getComponent(FlxSizeComponent).width = value;
 	}
 
 	@:noCompletion
@@ -1402,7 +1402,7 @@ class FlxObject extends FlxBasic
 		}
 		#end
 
-		return height = value;
+		return getComponent(FlxSizeComponent).height = value;
 	}
 
 	@:noCompletion
@@ -1420,13 +1420,13 @@ class FlxObject extends FlxBasic
 	@:noCompletion
 	function get_width():Float
 	{
-		return width;
+		return getComponent(FlxSizeComponent).width;
 	}
 
 	@:noCompletion
 	function get_height():Float
 	{
-		return height;
+		return getComponent(FlxSizeComponent).height;
 	}
 
 	@:noCompletion

@@ -310,6 +310,11 @@ class FlxG
 	public static var cameras(default, null):CameraFrontEnd = new CameraFrontEnd();
 
 	/**
+	 * Contains things related to the Entity Component System.
+	 */
+	public static var ecs(default, null):ECSFrontEnd = new ECSFrontEnd();
+
+	/**
 	 * Contains a list of all plugins and the functions required to `add()`, `remove()` them etc.
 	 */
 	public static var plugins(default, null):PluginFrontEnd;
