@@ -7,6 +7,7 @@ import flixel.math.FlxVelocity;
 import flixel.path.FlxPath;
 import flixel.ecs.components.FlxPositionComponent;
 import flixel.ecs.components.FlxSizeComponent;
+import flixel.ecs.components.FlxMotionComponent;
 import flixel.tile.FlxBaseTilemap;
 import flixel.util.FlxAxes;
 import flixel.util.FlxColor;
@@ -591,7 +592,7 @@ class FlxObject extends FlxBasic
 	/**
 	 * Whether an object will move/alter position after a collision.
 	 */
-	public var immovable(default, set):Bool = false;
+	public var immovable(get, set):Bool;
 
 	/**
 	 * Whether the object collides or not. For more control over what directions the object will collide from,
@@ -609,25 +610,25 @@ class FlxObject extends FlxBasic
 	/**
 	 * The basic speed of this object (in pixels per second).
 	 */
-	public var velocity(default, null):FlxPoint;
+	public var velocity(get, never):FlxPoint;
 
 	/**
 	 * How fast the speed of this object is changing (in pixels per second).
 	 * Useful for smooth movement and gravity.
 	 */
-	public var acceleration(default, null):FlxPoint;
+	public var acceleration(get, never):FlxPoint;
 
 	/**
 	 * This isn't drag exactly, more like deceleration that is only applied
 	 * when `acceleration` is not affecting the sprite.
 	 */
-	public var drag(default, null):FlxPoint;
+	public var drag(get, never):FlxPoint;
 
 	/**
 	 * If you are using `acceleration`, you can use `maxVelocity` with it
 	 * to cap the speed automatically (very useful!).
 	 */
-	public var maxVelocity(default, null):FlxPoint;
+	public var maxVelocity(get, never):FlxPoint;
 
 	/**
 	 * Important variable for collision processing.
@@ -639,32 +640,32 @@ class FlxObject extends FlxBasic
 	 * The virtual mass of the object. Default value is 1. Currently only used with elasticity
 	 * during collision resolution. Change at your own risk; effects seem crazy unpredictable so far!
 	 */
-	public var mass:Float = 1;
+	public var mass(get, set):Float;
 
 	/**
 	 * The bounciness of this object. Only affects collisions. Default value is 0, or "not bouncy at all."
 	 */
-	public var elasticity:Float = 0;
+	public var elasticity(get, set):Float;
 
 	/**
 	 * This is how fast you want this sprite to spin (in degrees per second).
 	 */
-	public var angularVelocity:Float = 0;
+	public var angularVelocity(get, set):Float;
 
 	/**
 	 * How fast the spin speed should change (in degrees per second).
 	 */
-	public var angularAcceleration:Float = 0;
+	public var angularAcceleration(get, set):Float;
 
 	/**
 	 * Like drag but for spinning.
 	 */
-	public var angularDrag:Float = 0;
+	public var angularDrag(get, set):Float;
 
 	/**
 	 * Use in conjunction with angularAcceleration for fluid spin speed control.
 	 */
-	public var maxAngular:Float = 10000;
+	public var maxAngular(get, set):Float;
 
 	#if FLX_HEALTH
 	/**
@@ -769,6 +770,7 @@ class FlxObject extends FlxBasic
 
 		addComponent(new FlxPositionComponent(x, y));
 		addComponent(new FlxSizeComponent(width, height));
+		addComponent(new FlxMotionComponent());
 		this.width = width;
 		this.height = height;
 
@@ -795,10 +797,6 @@ class FlxObject extends FlxBasic
 	@:noCompletion
 	inline function initMotionVars():Void
 	{
-		velocity = FlxPoint.get();
-		acceleration = FlxPoint.get();
-		drag = FlxPoint.get();
-		maxVelocity = FlxPoint.get(10000, 10000);
 	}
 
 	/**
@@ -815,10 +813,6 @@ class FlxObject extends FlxBasic
 	{
 		super.destroy();
 
-		velocity = FlxDestroyUtil.put(velocity);
-		acceleration = FlxDestroyUtil.put(acceleration);
-		drag = FlxDestroyUtil.put(drag);
-		maxVelocity = FlxDestroyUtil.put(maxVelocity);
 		scrollFactor = FlxDestroyUtil.put(scrollFactor);
 		last = FlxDestroyUtil.put(last);
 		_point = FlxDestroyUtil.put(_point);
@@ -1457,7 +1451,7 @@ class FlxObject extends FlxBasic
 	@:noCompletion
 	function set_immovable(value:Bool):Bool
 	{
-		return immovable = value;
+		return getComponent(FlxMotionComponent).immovable = value;
 	}
 
 	@:noCompletion
@@ -1504,6 +1498,107 @@ class FlxObject extends FlxBasic
 		if (path != null)
 			path.object = this;
 		return this.path = path;
+	}
+	@:noCompletion
+	function get_velocity():FlxPoint
+	{
+		return getComponent(FlxMotionComponent).velocity;
+	}
+	
+	@:noCompletion
+	function get_acceleration():FlxPoint
+	{
+		return getComponent(FlxMotionComponent).acceleration;
+	}
+	
+	@:noCompletion
+	function get_drag():FlxPoint
+	{
+		return getComponent(FlxMotionComponent).drag;
+	}
+	
+	@:noCompletion
+	function get_maxVelocity():FlxPoint
+	{
+		return getComponent(FlxMotionComponent).maxVelocity;
+	}
+	
+	@:noCompletion
+	function get_mass():Float
+	{
+		return getComponent(FlxMotionComponent).mass;
+	}
+	
+	@:noCompletion
+	function set_mass(value:Float):Float
+	{
+		return getComponent(FlxMotionComponent).mass = value;
+	}
+	
+	@:noCompletion
+	function get_elasticity():Float
+	{
+		return getComponent(FlxMotionComponent).elasticity;
+	}
+	
+	@:noCompletion
+	function set_elasticity(value:Float):Float
+	{
+		return getComponent(FlxMotionComponent).elasticity = value;
+	}
+	
+	@:noCompletion
+	function get_angularVelocity():Float
+	{
+		return getComponent(FlxMotionComponent).angularVelocity;
+	}
+	
+	@:noCompletion
+	function set_angularVelocity(value:Float):Float
+	{
+		return getComponent(FlxMotionComponent).angularVelocity = value;
+	}
+	
+	@:noCompletion
+	function get_angularAcceleration():Float
+	{
+		return getComponent(FlxMotionComponent).angularAcceleration;
+	}
+	
+	@:noCompletion
+	function set_angularAcceleration(value:Float):Float
+	{
+		return getComponent(FlxMotionComponent).angularAcceleration = value;
+	}
+	
+	@:noCompletion
+	function get_angularDrag():Float
+	{
+		return getComponent(FlxMotionComponent).angularDrag;
+	}
+	
+	@:noCompletion
+	function set_angularDrag(value:Float):Float
+	{
+		return getComponent(FlxMotionComponent).angularDrag = value;
+	}
+	
+	@:noCompletion
+	function get_maxAngular():Float
+	{
+		return getComponent(FlxMotionComponent).maxAngular;
+	}
+	
+	@:noCompletion
+	function set_maxAngular(value:Float):Float
+	{
+		return getComponent(FlxMotionComponent).maxAngular = value;
+	}
+	
+	@:noCompletion
+	function get_immovable():Bool
+	{
+		return getComponent(FlxMotionComponent).immovable;
 	}
 }
 

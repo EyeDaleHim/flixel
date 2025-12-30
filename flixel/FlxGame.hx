@@ -1,5 +1,6 @@
 package flixel;
 
+import flixel.ecs.data.FlxSystemPhase;
 import flixel.graphics.tile.FlxDrawBaseItem;
 import flixel.system.FlxSplash;
 import flixel.util.FlxArrayUtil;
@@ -690,7 +691,9 @@ class FlxGame extends Sprite
 		#end
 		FlxG.plugins.update(FlxG.elapsed);
 
+		FlxG.ecs.update(FlxSystemPhase.PRE_UPDATE, FlxG.elapsed);
 		_state.tryUpdate(FlxG.elapsed);
+		FlxG.ecs.update(FlxSystemPhase.POST_UPDATE, FlxG.elapsed);
 
 		FlxG.cameras.update(FlxG.elapsed);
 		FlxG.signals.postUpdate.dispatch();

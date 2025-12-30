@@ -1735,15 +1735,15 @@ interface IFlxSprite extends IFlxBasic
 	var angle(default, set):Float;
 	var facing(default, set):FlxDirectionFlags;
 	var moves(default, set):Bool;
-	var immovable(default, set):Bool;
+	var immovable(get, set):Bool;
 
 	var offset(default, null):FlxPoint;
 	var origin(default, null):FlxPoint;
 	var scale(default, null):FlxPoint;
-	var velocity(default, null):FlxPoint;
-	var maxVelocity(default, null):FlxPoint;
-	var acceleration(default, null):FlxPoint;
-	var drag(default, null):FlxPoint;
+	var velocity(get, never):FlxPoint;
+	var maxVelocity(get, never):FlxPoint;
+	var acceleration(get, never):FlxPoint;
+	var drag(get, never):FlxPoint;
 	var scrollFactor(default, null):FlxPoint;
 
 	function reset(X:Float, Y:Float):Void;

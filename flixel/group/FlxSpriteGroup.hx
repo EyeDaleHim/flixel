@@ -786,7 +786,7 @@ class FlxTypedSpriteGroup<T:FlxSprite> extends FlxSprite
 	{
 		if (exists && immovable != Value)
 			transformChildren(immovableTransform, Value);
-		return immovable = Value;
+		return super.set_immovable(Value);
 	}
 
 	override function set_solid(Value:Bool):Bool
