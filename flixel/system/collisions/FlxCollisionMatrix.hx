@@ -1,4 +1,4 @@
-package flixel.ecs.data;
+package flixel.system.collisions;
 
 import flixel.system.ds.FlxOrderedSet;
 

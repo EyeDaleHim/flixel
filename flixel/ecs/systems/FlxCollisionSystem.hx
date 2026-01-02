@@ -2,12 +2,14 @@ package flixel.ecs.systems;
 
 import flixel.FlxBasic;
 import flixel.FlxObject;
+import flixel.FlxG;
 import flixel.ecs.components.FlxCollisionComponent;
 import flixel.ecs.components.FlxPositionComponent;
 import flixel.ecs.components.FlxSizeComponent;
 import flixel.ecs.data.FlxSystemPhase;
+import flixel.group.FlxGroup;
 import flixel.system.collisions.FlxCollisionMatrix;
-import flixel.system.collisions.FlxSpatialHash;
+import flixel.system.collisions.FlxQuadTree;
 import flixel.util.FlxDirectionFlags;
 import flixel.math.FlxPoint;
 import flixel.math.FlxRect;
@@ -16,9 +18,23 @@ import flixel.FlxObject.CollisionDragType;
 
 class FlxCollisionSystem extends FlxComponentSystem
 {
+	/**
+	 * If `true`, the system will skip its `update()` loop.
+	 * 
+	 * This is if you prefer checking collisions imperatively.
+	 */
+	public var skipUpdates:Bool = false;
+	
+	/**
+	 * Choose whether layers should be ignored during `update()`.
+	 * 
+	 * This is always `true` with manual `overlap()` and `collide()` calls.
+	 */
+	public var ignoreLayers:Bool = false;
+	
 	public var matrix:FlxCollisionMatrix;
 	
-	var spatialHash:FlxSpatialHash;
+	var _group:FlxGroup;
 	
 	/**
 	 * This value dictates the maximum number of pixels two objects have to intersect
@@ -27,12 +43,18 @@ class FlxCollisionSystem extends FlxComponentSystem
 	 */
 	public static var SEPARATE_BIAS:Float = 4;
 
+	/**
+	 * The default layer for all FlxCollisionComponents.
+	 */
+	public static var DEFAULT_LAYER:Int = 1;
+	
 	public function new()
 	{
 		super(FlxSystemPhase.PRE_UPDATE);
 		
-		spatialHash = new FlxSpatialHash(128);
+		_group = new FlxGroup();
 		matrix = new FlxCollisionMatrix();
+		matrix.setCanCollide(DEFAULT_LAYER, DEFAULT_LAYER, true);
 	}
 	
 	/**
@@ -43,45 +65,100 @@ class FlxCollisionSystem extends FlxComponentSystem
 	 */
 	override public function update(phase:FlxSystemPhase, elapsed:Float):Void
 	{
-		spatialHash.clear();
 		var entities = getEntitiesWithMultiple([FlxPositionComponent, FlxSizeComponent, FlxCollisionComponent]);
 		
-		// Broad-phase
+		_group.clear();
+		
 		for (entity in entities)
 		{
-			final pos = entity.getComponent(FlxPositionComponent);
-			final size = entity.getComponent(FlxSizeComponent);
-			spatialHash.insert(entity, pos.x, pos.y, size.width, size.height);
-			
 			final col = entity.getComponent(FlxCollisionComponent);
 			col.wasTouching = col.touching;
 			col.touching = FlxDirectionFlags.NONE;
+			_group.add(entity);
 		}
 		
-		// Narrow-phase
-		for (entity in entities)
+		FlxQuadTree.divisions = FlxG.worldDivisions;
+		final quadTree = FlxQuadTree.recycle(FlxG.worldBounds.x, FlxG.worldBounds.y, FlxG.worldBounds.width, FlxG.worldBounds.height);
+		quadTree.load(_group, null, null, (object1:FlxObject, object2:FlxObject) ->
 		{
-			final col = entity.getComponent(FlxCollisionComponent);
-			final pos = entity.getComponent(FlxPositionComponent);
-			final size = entity.getComponent(FlxSizeComponent);
+			var col1 = object1.getComponent(FlxCollisionComponent);
+			var col2 = object2.getComponent(FlxCollisionComponent);
 			
-			var nearbyEntities = spatialHash.getNearby(entity, pos.x, pos.y, size.width, size.height);
-			for (otherEntity in nearbyEntities)
+			if (matrix.shouldCollide(col1.collisionLayer, col2.collisionLayer))
 			{
-				var otherCol = otherEntity.getComponent(FlxCollisionComponent);
-				
-				if (matrix.shouldCollide(col.collisionLayer, otherCol.collisionLayer))
-				{
-					// TODO: After all checks, this means they are definitely colliding.
-					// We can process their overlap code here, maybe like AABB?
-
-					final obj1:FlxObject = cast entity;
-					final obj2:FlxObject = cast otherEntity;
-
-					separate(obj1, obj2);
-				}
+				return separate(object1, object2);
 			}
-		}
+			return false;
+		});
+		quadTree.execute();
+		quadTree.destroy();
+	}
+	
+	/**
+	 * Call this function to see if one `FlxObject` overlaps another within `FlxG.worldBounds`.
+	 * Can be called with one object and one group, or two groups, or two objects,
+	 * whatever floats your boat! For maximum performance try bundling a lot of objects
+	 * together using a `FlxGroup` (or even bundling groups together!).
+	 *
+	 * NOTE: does NOT take objects' `scrollFactor` into account, all overlaps are checked in world space.
+	 *
+	 * NOTE: this takes the entire area of `FlxTilemap`s into account (including "empty" tiles).
+	 * Use `FlxTilemap#overlaps()` if you don't want that.
+	 *
+	 * @param   objectOrGroup1   The first object or group you want to check.
+	 * @param   objectOrGroup2   The second object or group you want to check. If it is the same as the first,
+	 *                           Flixel knows to just do a comparison within that group.
+	 * @param   notifyCallback   A function with two `FlxObject` parameters -
+	 *                           e.g. `onOverlap(object1:FlxObject, object2:FlxObject)` -
+	 *                           that is called if those two objects overlap.
+	 * @param   processCallback  A function with two `FlxObject` parameters -
+	 *                           e.g. `onOverlap(object1:FlxObject, object2:FlxObject)` -
+	 *                           that is called if those two objects overlap.
+	 *                           If a `ProcessCallback` is provided, then `NotifyCallback`
+	 *                           will only be called if `ProcessCallback` returns true for those objects!
+	 * @return  Whether any overlaps were detected.
+	 */
+	public static function overlap(?objectOrGroup1:FlxBasic, ?objectOrGroup2:FlxBasic, ?notifyCallback:Dynamic->Dynamic->Void,
+			?processCallback:Dynamic->Dynamic->Bool):Bool
+	{
+		final system = FlxG.ecs.get(FlxCollisionSystem);
+		var formerIgnoreLayers = system.ignoreLayers;
+		system.ignoreLayers = true;
+		
+		if (objectOrGroup1 == null)
+			objectOrGroup1 = FlxG.state;
+		if (objectOrGroup2 == objectOrGroup1)
+			objectOrGroup2 = null;
+			
+		FlxQuadTree.divisions = FlxG.worldDivisions;
+		final quadTree = FlxQuadTree.recycle(FlxG.worldBounds.x, FlxG.worldBounds.y, FlxG.worldBounds.width, FlxG.worldBounds.height);
+		quadTree.load(objectOrGroup1, objectOrGroup2, notifyCallback, processCallback);
+		final result:Bool = quadTree.execute();
+		quadTree.destroy();
+		system.ignoreLayers = formerIgnoreLayers;
+		return result;
+	}
+	/**
+	 * Call this function to see if one `FlxObject` collides with another within `FlxG.worldBounds`.
+	 * Can be called with one object and one group, or two groups, or two objects,
+	 * whatever floats your boat! For maximum performance try bundling a lot of objects
+	 * together using a FlxGroup (or even bundling groups together!).
+	 *
+	 * This function just calls `overlap` and presets the `ProcessCallback` parameter to `separate`.
+	 * To create your own collision logic, write your own `ProcessCallback` and use `overlap` to set it up.
+	 * NOTE: does NOT take objects' `scrollFactor` into account, all overlaps are checked in world space.
+	 *
+	 * @param   objectOrGroup1  The first object or group you want to check.
+	 * @param   objectOrGroup2  The second object or group you want to check. If it is the same as the first,
+	 *                          Flixel knows to just do a comparison within that group.
+	 * @param   notifyCallback  A function with two `FlxObject` parameters -
+	 *                          e.g. `onOverlap(object1:FlxObject, object2:FlxObject)` -
+	 *                          that is called if those two objects overlap.
+	 * @return  Whether any objects were successfully collided/separated.
+	 */
+	public static inline function collide(?objectOrGroup1:FlxBasic, ?objectOrGroup2:FlxBasic, ?notifyCallback:Dynamic->Dynamic->Void):Bool
+	{
+		return overlap(objectOrGroup1, objectOrGroup2, notifyCallback, separate);
 	}
 
 	static function allowCollisionDrag(type:CollisionDragType, object1:FlxObject, object2:FlxObject):Bool
@@ -92,9 +169,8 @@ class FlxCollisionSystem extends FlxComponentSystem
 			case ALWAYS: true;
 			case IMMOVABLE: object2.immovable;
 			case HEAVIER: object2.immovable || object2.mass > object1.mass;
-		}
-	}
-	
+		}}
+		
 	/**
 	 * Internal elper that determines whether either object is a tilemap, determines
 	 * which tiles are overlapping and calls the appropriate separator
@@ -108,13 +184,12 @@ class FlxCollisionSystem extends FlxComponentSystem
 	 * @since 5.9.0
 	 */
 	@:haxe.warning("-WDeprecated")
-	static function processCheckTilemap(object1:FlxObject, object2:FlxObject, func:(FlxObject, FlxObject)->Bool,
-		?position:FlxPoint, isCollision = true):Bool
+	static function processCheckTilemap(object1:FlxObject, object2:FlxObject, func:(FlxObject, FlxObject) -> Bool, ?position:FlxPoint, isCollision = true):Bool
 	{
 		// two immovable objects cannot collide
 		if (isCollision && object1.immovable && object2.immovable)
 			return false;
-		
+
 		// If one of the objects is a tilemap, just pass it off.
 		@:privateAccess
 		if (object1.flixelType == TILEMAP)
@@ -237,7 +312,7 @@ class FlxCollisionSystem extends FlxComponentSystem
 				object1.y += object2.y - object2.last.y;
 			else if (allowCollisionDrag(object2.collisionYDrag, object2, object1) && delta2 > delta1)
 				object2.y += object1.y - object1.last.y;
-			
+
 			return true;
 		}
 		
@@ -291,7 +366,7 @@ class FlxCollisionSystem extends FlxComponentSystem
 				object1.x += object2.x - object2.last.x;
 			else if (allowCollisionDrag(object2.collisionXDrag, object2, object1) && delta2 > delta1)
 				object2.x += object1.x - object1.last.x;
-			
+
 			return true;
 		}
 		

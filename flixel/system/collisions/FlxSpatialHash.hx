@@ -1,7 +1,10 @@
-package flixel.ecs.data;
+package flixel.system.collisions;
 
 import haxe.ds.Vector;
 
+/**
+ * A spatial hash grid for efficient broad-phase collision detection.
+ */
 class FlxSpatialHash
 {
 	public var cellSize:Int;

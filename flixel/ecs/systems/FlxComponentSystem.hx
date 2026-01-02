@@ -56,7 +56,8 @@ class FlxComponentSystem implements IFlxDestroyable
 		var entities:Array<FlxBasic> = [];
 		for (entity in list.members)
 		{
-			if (entity.hasComponent(componentType))
+			var component = entity.getComponent(componentType);
+			if (component != null)
 			{
 				entities.push(entity);
 			}
@@ -87,7 +88,8 @@ class FlxComponentSystem implements IFlxDestroyable
 				var hasAllComponents:Bool = true;
 				for (componentType in componentTypes)
 				{
-					if (!entity.hasComponent(componentType))
+					var component = entity.getComponent(componentType);
+					if (component != null)
 					{
 						hasAllComponents = false;
 						break;
@@ -100,7 +102,8 @@ class FlxComponentSystem implements IFlxDestroyable
 			{
 				for (componentType in componentTypes)
 				{
-					if (entity.hasComponent(componentType))
+					var component = entity.getComponent(componentType);
+					if (component != null)
 					{
 						entities.push(entity);
 						break;

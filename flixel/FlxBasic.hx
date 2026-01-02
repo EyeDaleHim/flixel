@@ -2,9 +2,9 @@ package flixel;
 
 import flixel.group.FlxContainer;
 import flixel.ecs.components.FlxComponent;
+import flixel.system.ds.FlxClassMap;
 import flixel.util.FlxDestroyUtil;
 import flixel.util.FlxStringUtil;
-import haxe.ds.Map;
 
 /**
  * This is a useful "generic" Flixel object. Both `FlxObject` and
@@ -68,7 +68,7 @@ class FlxBasic implements IFlxDestroyable
 	 * The list of components attached to this object.
 	 * Initialized lazily.
 	 */
-	public var components(default, null):Map<Dynamic, FlxComponent>;
+	public var components(default, null):FlxClassMap;
 
 	/**
 	 * Enum that informs the collision system which type of object this is (to avoid expensive type casting).
@@ -93,7 +93,7 @@ class FlxBasic implements IFlxDestroyable
 	public function addComponent<T:FlxComponent>(component:T):T
 	{
 		if (components == null)
-			components = new Map<Dynamic, FlxComponent>();
+			components = new FlxClassMap();
 			
 		components.set(Type.getClass(component), component);
 		component.setParent(this);
@@ -128,16 +128,6 @@ class FlxBasic implements IFlxDestroyable
 				found.push(cast component);
 		}
 		return found;
-	}
-
-	/**
-	 * Has a component by class.
-	 */
-	public function hasComponent<T:FlxComponent>(cls:Class<T>):Bool
-	{
-		if (components == null)
-			return false;
-		return components.exists(cls);
 	}
 
 	/**
