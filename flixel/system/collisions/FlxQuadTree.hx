@@ -1,4 +1,4 @@
-package flixel.system;
+package flixel.system.collisions;
 
 import flixel.FlxBasic;
 import flixel.FlxObject;

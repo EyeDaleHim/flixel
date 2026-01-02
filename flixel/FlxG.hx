@@ -4,7 +4,7 @@ import flixel.ecs.systems.FlxCollisionSystem;
 import flixel.math.FlxMath;
 import flixel.math.FlxRandom;
 import flixel.math.FlxRect;
-import flixel.system.FlxQuadTree;
+import flixel.system.collisions.FlxQuadTree;
 import flixel.system.FlxVersion;
 import flixel.system.frontEnds.AssetFrontEnd;
 import flixel.system.frontEnds.BitmapFrontEnd;

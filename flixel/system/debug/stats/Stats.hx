@@ -6,7 +6,7 @@ import openfl.text.TextField;
 import flixel.FlxG;
 import flixel.math.FlxMath;
 import flixel.system.ds.FlxLinkedList;
-import flixel.system.FlxQuadTree;
+import flixel.system.collisions.FlxQuadTree;
 import flixel.system.debug.DebuggerUtil;
 import flixel.system.ui.FlxSystemButton;
 import flixel.util.FlxColor;
