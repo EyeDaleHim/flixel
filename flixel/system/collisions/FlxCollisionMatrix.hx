@@ -29,7 +29,7 @@ class FlxCollisionMatrix
 	function setEntry(a:Int, b:Int, val:Bool):Void
 	{
 		if (!matrix.exists(a))
-			matrix.set(a, new FlxOrderedSet<Int>());
+			matrix.set(a, FlxOrderedSet.createInt());
 		if (val)
 			matrix.get(a).add(b);
 		else
