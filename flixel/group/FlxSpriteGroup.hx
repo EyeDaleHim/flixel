@@ -110,8 +110,6 @@ class FlxTypedSpriteGroup<T:FlxSprite> extends FlxSprite
 
 		scale.set(1, 1);
 		scrollFactor.set(1, 1);
-
-		initMotionVars();
 	}
 
 	/**

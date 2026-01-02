@@ -32,6 +32,13 @@ class FlxCollisionComponent extends FlxComponent
 	 */
 	public var collisionYDrag:CollisionDragType = NEVER;
 
+	/**
+	 * An ID representing the group(s) this object belongs to.
+	 * The `FlxCollisionSystem` will use this to filter collisions.
+	 * Defaults to 1.
+	 */
+	public var collisionLayer:Int = 1;
+
 	public function new()
 	{
 		super();

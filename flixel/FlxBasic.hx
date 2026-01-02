@@ -4,6 +4,7 @@ import flixel.group.FlxContainer;
 import flixel.ecs.components.FlxComponent;
 import flixel.util.FlxDestroyUtil;
 import flixel.util.FlxStringUtil;
+import haxe.ds.Map;
 
 /**
  * This is a useful "generic" Flixel object. Both `FlxObject` and
@@ -67,7 +68,7 @@ class FlxBasic implements IFlxDestroyable
 	 * The list of components attached to this object.
 	 * Initialized lazily.
 	 */
-	public var components(default, null):Array<FlxComponent>;
+	public var components(default, null):Map<Dynamic, FlxComponent>;
 
 	/**
 	 * Enum that informs the collision system which type of object this is (to avoid expensive type casting).
@@ -92,9 +93,9 @@ class FlxBasic implements IFlxDestroyable
 	public function addComponent<T:FlxComponent>(component:T):T
 	{
 		if (components == null)
-			components = [];
+			components = new Map<Dynamic, FlxComponent>();
 			
-		components.push(component);
+		components.set(Type.getClass(component), component);
 		component.setParent(this);
 		return component;
 	}
@@ -106,12 +107,27 @@ class FlxBasic implements IFlxDestroyable
 	{
 		if (components == null)
 			return null;
-		for (comp in components)
+		return cast components.get(cls);
+	}
+	
+	/**
+	 * Gets a list of components by class.
+	 * 
+	 * The order is dependent on `list` and whether components are discoverable.
+	 */
+	public function getComponents<T:FlxComponent>(list:Array<Class<T>>):Array<T>
+	{
+		if (components == null)
+			return [];
+			
+		final found = [];
+		for (cls in list)
 		{
-			if (Std.isOfType(comp, cls))
-				return cast comp;
+			final component = components.get(cls);
+			if (component != null)
+				found.push(cast component);
 		}
-		return null;
+		return found;
 	}
 
 	/**
@@ -121,12 +137,7 @@ class FlxBasic implements IFlxDestroyable
 	{
 		if (components == null)
 			return false;
-		for (comp in components)
-		{
-			if (Std.isOfType(comp, cls))
-				return true;
-		}
-		return false;
+		return components.exists(cls);
 	}
 
 	/**

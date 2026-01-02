@@ -1,5 +1,6 @@
 package flixel;
 
+import flixel.ecs.systems.FlxCollisionSystem;
 import flixel.math.FlxMath;
 import flixel.math.FlxRandom;
 import flixel.math.FlxRect;
@@ -480,7 +481,7 @@ class FlxG
 	 */
 	public static inline function collide(?objectOrGroup1:FlxBasic, ?objectOrGroup2:FlxBasic, ?notifyCallback:Dynamic->Dynamic->Void):Bool
 	{
-		return overlap(objectOrGroup1, objectOrGroup2, notifyCallback, FlxObject.separate);
+		return overlap(objectOrGroup1, objectOrGroup2, notifyCallback, FlxCollisionSystem.separate);
 	}
 
 	/**

@@ -5,7 +5,7 @@ import openfl.system.System;
 import openfl.text.TextField;
 import flixel.FlxG;
 import flixel.math.FlxMath;
-import flixel.system.FlxLinkedList;
+import flixel.system.ds.FlxLinkedList;
 import flixel.system.FlxQuadTree;
 import flixel.system.debug.DebuggerUtil;
 import flixel.system.ui.FlxSystemButton;

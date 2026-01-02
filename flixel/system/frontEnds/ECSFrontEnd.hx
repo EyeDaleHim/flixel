@@ -2,15 +2,22 @@ package flixel.system.frontEnds;
 
 import flixel.ecs.data.FlxSystemPhase;
 import flixel.ecs.systems.FlxComponentSystem;
+import flixel.ecs.systems.FlxCollisionSystem;
 import flixel.ecs.systems.FlxMotionSystem;
 
 class ECSFrontEnd
 {
 	var _systems:Array<FlxComponentSystem> = [];
+
+	var _sortOnAdd:Bool = false;
 	
-	public function new() 
+	public function new()
 	{
 		add(new FlxMotionSystem());
+		add(new FlxCollisionSystem());
+		
+		_sortOnAdd = true;
+		sort();
 	}
 	
 	/**
@@ -22,8 +29,26 @@ class ECSFrontEnd
 	public function add<T:FlxComponentSystem>(system:T):T
 	{
 		_systems.push(system);
-		sort();
+		if (_sortOnAdd)
+			sort();
 		return system;
+	}
+	
+	/**
+	 * Retrieves a system of a specific type from the ECS.
+	 * @param systemType The class of the system to retrieve.
+	 * @return The system of the specified type, or `null` if not found.
+	 */
+	public function get<T:FlxComponentSystem>(systemType:Class<T>):T
+	{
+		for (system in _systems)
+		{
+			if (Std.isOfType(system, systemType))
+			{
+				return cast system;
+			}
+		}
+		return null;
 	}
 	
 	/**

@@ -1,4 +1,4 @@
-package flixel.system;
+package flixel.system.ds;
 
 import flixel.FlxObject;
 import flixel.util.FlxDestroyUtil.IFlxDestroyable;
