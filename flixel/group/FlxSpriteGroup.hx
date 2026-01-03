@@ -222,9 +222,6 @@ class FlxTypedSpriteGroup<T:FlxSprite> extends FlxSprite
 
 		if (path != null && path.active)
 			path.update(elapsed);
-
-		if (moves)
-			updateMotion(elapsed);
 	}
 
 	override public function draw():Void
@@ -734,7 +731,7 @@ class FlxTypedSpriteGroup<T:FlxSprite> extends FlxSprite
 	{
 		if (exists && angle != Value)
 			transformChildren(angleTransform, Value - angle);// offset
-		return angle = Value;
+		return super.set_angle(Value);
 	}
 
 	override function set_alpha(Value:Float):Float

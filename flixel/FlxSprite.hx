@@ -1732,7 +1732,7 @@ class FlxSprite extends FlxObject
 interface IFlxSprite extends IFlxBasic
 {
 	var alpha(default, set):Float;
-	var angle(default, set):Float;
+	var angle(get, set):Float;
 	var facing(default, set):FlxDirectionFlags;
 	var moves(default, set):Bool;
 	var immovable(get, set):Bool;
@@ -1744,7 +1744,7 @@ interface IFlxSprite extends IFlxBasic
 	var maxVelocity(get, never):FlxPoint;
 	var acceleration(get, never):FlxPoint;
 	var drag(get, never):FlxPoint;
-	var scrollFactor(default, null):FlxPoint;
+	var scrollFactor(get, set):FlxPoint;
 
 	function reset(X:Float, Y:Float):Void;
 	function setPosition(X:Float = 0, Y:Float = 0):Void;

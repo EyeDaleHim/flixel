@@ -4,8 +4,7 @@ import flixel.FlxBasic;
 import flixel.FlxObject;
 import flixel.FlxG;
 import flixel.ecs.components.FlxCollisionComponent;
-import flixel.ecs.components.FlxPositionComponent;
-import flixel.ecs.components.FlxSizeComponent;
+import flixel.ecs.components.FlxTransformComponent;
 import flixel.ecs.data.FlxSystemPhase;
 import flixel.group.FlxGroup;
 import flixel.system.collisions.FlxCollisionMatrix;
@@ -65,7 +64,7 @@ class FlxCollisionSystem extends FlxComponentSystem
 	 */
 	override public function update(phase:FlxSystemPhase, elapsed:Float):Void
 	{
-		var entities = getEntitiesWithMultiple([FlxPositionComponent, FlxSizeComponent, FlxCollisionComponent]);
+		var entities = getEntitiesWithMultiple([FlxTransformComponent, FlxCollisionComponent]);
 		
 		_group.clear();
 		
@@ -510,8 +509,8 @@ class FlxCollisionSystem extends FlxComponentSystem
 					}
 					else
 					{
-						object1.touching |= FlxDirectionFlags.RIGHT;
-						object2.touching |= FlxDirectionFlags.LEFT;
+						object1.getComponent(FlxCollisionComponent).touching |= FlxDirectionFlags.RIGHT;
+						object2.getComponent(FlxCollisionComponent).touching |= FlxDirectionFlags.LEFT;
 					}
 				}
 				else if (delta1 < delta2)
@@ -525,8 +524,8 @@ class FlxCollisionSystem extends FlxComponentSystem
 					}
 					else
 					{
-						object1.touching |= FlxDirectionFlags.LEFT;
-						object2.touching |= FlxDirectionFlags.RIGHT;
+						object1.getComponent(FlxCollisionComponent).touching |= FlxDirectionFlags.LEFT;
+						object2.getComponent(FlxCollisionComponent).touching |= FlxDirectionFlags.RIGHT;
 					}
 				}
 			}
@@ -580,8 +579,8 @@ class FlxCollisionSystem extends FlxComponentSystem
 					}
 					else
 					{
-						object1.touching |= FlxDirectionFlags.DOWN;
-						object2.touching |= FlxDirectionFlags.UP;
+						object1.getComponent(FlxCollisionComponent).touching |= FlxDirectionFlags.DOWN;
+						object2.getComponent(FlxCollisionComponent).touching |= FlxDirectionFlags.UP;
 					}
 				}
 				else if (delta1 < delta2)
@@ -595,8 +594,8 @@ class FlxCollisionSystem extends FlxComponentSystem
 					}
 					else
 					{
-						object1.touching |= FlxDirectionFlags.UP;
-						object2.touching |= FlxDirectionFlags.DOWN;
+						object1.getComponent(FlxCollisionComponent).touching |= FlxDirectionFlags.UP;
+						object2.getComponent(FlxCollisionComponent).touching |= FlxDirectionFlags.DOWN;
 					}
 				}
 			}

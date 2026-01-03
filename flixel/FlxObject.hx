@@ -6,8 +6,7 @@ import flixel.math.FlxPoint;
 import flixel.math.FlxRect;
 import flixel.math.FlxVelocity;
 import flixel.path.FlxPath;
-import flixel.ecs.components.FlxPositionComponent;
-import flixel.ecs.components.FlxSizeComponent;
+import flixel.ecs.components.FlxTransformComponent;
 import flixel.ecs.components.FlxMotionComponent;
 import flixel.tile.FlxBaseTilemap;
 import flixel.util.FlxAxes;
@@ -120,13 +119,13 @@ class FlxObject extends FlxBasic
 	/**
 	 * Whether or not the position of this object should be rounded before any `draw()` or collision checking.
 	 */
-	public var pixelPerfectPosition:Bool = true;
+	public var pixelPerfectPosition(get, set):Bool;
 
 	/**
 	 * Set the angle (in degrees) of a sprite to rotate it. WARNING: rotating sprites
 	 * decreases their rendering performance by a factor of ~10x when using blitting!
 	 */
-	public var angle(default, set):Float = 0;
+	public var angle(get, set):Float;
 
 	/**
 	 * Set this to `false` if you want to skip the automatic motion/movement stuff (see `updateMotion()`).
@@ -150,7 +149,7 @@ class FlxObject extends FlxBasic
 	 * `1` = same movement speed as the foreground. Default value is `(1,1)`,
 	 * except for UI elements like `FlxButton` where it's `(0,0)`.
 	 */
-	public var scrollFactor(default, null):FlxPoint;
+	public var scrollFactor(get, set):FlxPoint;
 
 	/**
 	 * The basic speed of this object (in pixels per second).
@@ -179,7 +178,7 @@ class FlxObject extends FlxBasic
 	 * Important variable for collision processing.
 	 * By default this value is set automatically during at the start of `update()`.
 	 */
-	public var last(default, null):FlxPoint;
+	public var last(get, never):FlxPoint;
 
 	/**
 	 * The virtual mass of the object. Default value is 1. Currently only used with elasticity
@@ -226,19 +225,19 @@ class FlxObject extends FlxBasic
 	 * Bit field of flags (use with UP, DOWN, LEFT, RIGHT, etc) indicating surface contacts. Use bitwise operators to check the values
 	 * stored here, or use isTouching(), justTouched(), etc. You can even use them broadly as boolean values if you're feeling saucy!
 	 */
-	public var touching = FlxDirectionFlags.NONE;
+	public var touching(get, set):FlxDirectionFlags;
 
 	/**
 	 * Bit field of flags (use with UP, DOWN, LEFT, RIGHT, etc) indicating surface contacts from the previous game loop step. Use bitwise operators to check the values
 	 * stored here, or use isTouching(), justTouched(), etc. You can even use them broadly as boolean values if you're feeling saucy!
 	 */
-	public var wasTouching = FlxDirectionFlags.NONE;
+	public var wasTouching(get, set):FlxDirectionFlags;
 
 	/**
 	 * Bit field of flags (use with UP, DOWN, LEFT, RIGHT, etc) indicating collision directions. Use bitwise operators to check the values stored here.
 	 * Useful for things like one-way platforms (e.g. allowCollisions = UP;). The accessor "solid" just flips this variable between NONE and ANY.
 	 */
-	public var allowCollisions(default, set) = FlxDirectionFlags.ANY;
+	public var allowCollisions(default, set):FlxDirectionFlags = FlxDirectionFlags.ANY;
 
 	/**
 	 * Whether this sprite is dragged along with the horizontal movement of objects it collides with
@@ -313,8 +312,7 @@ class FlxObject extends FlxBasic
 	{
 		super();
 
-		addComponent(new FlxPositionComponent(x, y));
-		addComponent(new FlxSizeComponent(width, height));
+		addComponent(new FlxTransformComponent(x, y, width, height));
 		addComponent(new FlxMotionComponent());
 		addComponent(new FlxCollisionComponent());
 
@@ -331,9 +329,6 @@ class FlxObject extends FlxBasic
 	function initVars():Void
 	{
 		flixelType = OBJECT;
-		last = FlxPoint.get(x, y);
-		scrollFactor = FlxPoint.get(1, 1);
-		pixelPerfectPosition = FlxObject.defaultPixelPerfectPosition;
 	}
 
 	/**
@@ -350,8 +345,6 @@ class FlxObject extends FlxBasic
 	{
 		super.destroy();
 
-		scrollFactor = FlxDestroyUtil.put(scrollFactor);
-		last = FlxDestroyUtil.put(last);
 		_point = FlxDestroyUtil.put(_point);
 		_rect = FlxDestroyUtil.put(_rect);
 	}
@@ -371,38 +364,6 @@ class FlxObject extends FlxBasic
 
 		if (path != null && path.active)
 			path.update(elapsed);
-
-		if (moves)
-			updateMotion(elapsed);
-
-		wasTouching = touching;
-		touching = FlxDirectionFlags.NONE;
-	}
-
-	/**
-	 * Internal function for updating the position and speed of this object.
-	 * Useful for cases when you need to update this but are buried down in too many supers.
-	 * Does a slightly fancier-than-normal integration to help with higher fidelity framerate-independent motion.
-	 */
-	@:noCompletion
-	function updateMotion(elapsed:Float):Void
-	{
-		var velocityDelta = 0.5 * (FlxVelocity.computeVelocity(angularVelocity, angularAcceleration, angularDrag, maxAngular, elapsed) - angularVelocity);
-		angularVelocity += velocityDelta;
-		angle += angularVelocity * elapsed;
-		angularVelocity += velocityDelta;
-
-		velocityDelta = 0.5 * (FlxVelocity.computeVelocity(velocity.x, acceleration.x, drag.x, maxVelocity.x, elapsed) - velocity.x);
-		velocity.x += velocityDelta;
-		var delta = velocity.x * elapsed;
-		velocity.x += velocityDelta;
-		x += delta;
-
-		velocityDelta = 0.5 * (FlxVelocity.computeVelocity(velocity.y, acceleration.y, drag.y, maxVelocity.y, elapsed) - velocity.y);
-		velocity.y += velocityDelta;
-		delta = velocity.y * elapsed;
-		velocity.y += velocityDelta;
-		y += delta;
 	}
 
 	/**
@@ -899,13 +860,13 @@ class FlxObject extends FlxBasic
 	@:noCompletion
 	function set_x(value:Float):Float
 	{
-		return getComponent(FlxPositionComponent).x = value;
+		return getComponent(FlxTransformComponent).position.x = value;
 	}
 
 	@:noCompletion
 	function set_y(value:Float):Float
 	{
-		return getComponent(FlxPositionComponent).y = value;
+		return getComponent(FlxTransformComponent).position.y = value;
 	}
 
 	@:noCompletion
@@ -919,7 +880,7 @@ class FlxObject extends FlxBasic
 		}
 		#end
 
-		return getComponent(FlxSizeComponent).width = value;
+		return getComponent(FlxTransformComponent).size.x = value;
 	}
 
 	@:noCompletion
@@ -933,31 +894,43 @@ class FlxObject extends FlxBasic
 		}
 		#end
 
-		return getComponent(FlxSizeComponent).height = value;
+		return getComponent(FlxTransformComponent).size.y = value;
 	}
 
 	@:noCompletion
 	function get_x():Float
 	{
-		return getComponent(FlxPositionComponent).x;
+		return getComponent(FlxTransformComponent).position.x;
 	}
 	
 	@:noCompletion
 	function get_y():Float
 	{
-		return getComponent(FlxPositionComponent).y;
+		return getComponent(FlxTransformComponent).position.y;
 	}
 
 	@:noCompletion
 	function get_width():Float
 	{
-		return getComponent(FlxSizeComponent).width;
+		return getComponent(FlxTransformComponent).size.x;
 	}
 
 	@:noCompletion
 	function get_height():Float
 	{
-		return getComponent(FlxSizeComponent).height;
+		return getComponent(FlxTransformComponent).size.y;
+	}
+	
+	@:noCompletion
+	function get_angle():Float
+	{
+		return getComponent(FlxTransformComponent).angle;
+	}
+	
+	@:noCompletion
+	function get_pixelPerfectPosition():Bool
+	{
+		return getComponent(FlxTransformComponent).pixelPerfectPosition;
 	}
 
 	@:noCompletion
@@ -976,7 +949,7 @@ class FlxObject extends FlxBasic
 	@:noCompletion
 	function set_angle(value:Float):Float
 	{
-		return angle = value;
+		return getComponent(FlxTransformComponent).angle = value;
 	}
 
 	@:noCompletion
@@ -989,6 +962,12 @@ class FlxObject extends FlxBasic
 	function set_immovable(value:Bool):Bool
 	{
 		return getComponent(FlxMotionComponent).immovable = value;
+	}
+
+	@:noCompletion
+	function set_pixelPerfectPosition(value:Bool):Bool
+	{
+		return getComponent(FlxTransformComponent).pixelPerfectPosition = value;
 	}
 
 	@:noCompletion
@@ -1136,6 +1115,47 @@ class FlxObject extends FlxBasic
 	function get_immovable():Bool
 	{
 		return getComponent(FlxMotionComponent).immovable;
+	}
+	@:noCompletion
+	function get_scrollFactor():FlxPoint
+	{
+		return getComponent(FlxTransformComponent).scrollFactor;
+	}
+	
+	@:noCompletion
+	function get_last():FlxPoint
+	{
+		return getComponent(FlxTransformComponent).last;
+	}
+	
+	@:noCompletion
+	function set_scrollFactor(value:FlxPoint):FlxPoint
+	{
+		return getComponent(FlxTransformComponent).scrollFactor = value;
+	}
+	
+	@:noCompletion
+	function get_touching():FlxDirectionFlags
+	{
+		return getComponent(FlxCollisionComponent).touching;
+	}
+	
+	@:noCompletion
+	function set_touching(value:FlxDirectionFlags):FlxDirectionFlags
+	{
+		return getComponent(FlxCollisionComponent).touching = value;
+	}
+	
+	@:noCompletion
+	function get_wasTouching():FlxDirectionFlags
+	{
+		return getComponent(FlxCollisionComponent).wasTouching;
+	}
+	
+	@:noCompletion
+	function set_wasTouching(value:FlxDirectionFlags):FlxDirectionFlags
+	{
+		return getComponent(FlxCollisionComponent).wasTouching = value;
 	}
 }
 
