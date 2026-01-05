@@ -681,7 +681,7 @@ class FlxText extends FlxSprite
 			return value;
 		}
 		_defaultFormat.color = value.rgb;
-		color = value;
+		super.set_color(value);
 		updateDefaultFormat();
 		return value;
 	}
@@ -860,13 +860,6 @@ class FlxText extends FlxSprite
 	inline function get_shadowOffset()
 	{
 		return _shadowOffset;
-	}
-
-	override function updateColorTransform():Void
-	{
-		colorTransform.alphaMultiplier = alpha;
-
-		dirty = true;
 	}
 
 	function regenGraphic():Void

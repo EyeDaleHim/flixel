@@ -746,7 +746,7 @@ class FlxTypedSpriteGroup<T:FlxSprite> extends FlxSprite
 			else
 				transformChildren(directAlphaTransform, Value);
 		}
-		return alpha = Value;
+		return super.set_alpha(Value);
 	}
 
 	override function set_facing(Value:FlxDirectionFlags):FlxDirectionFlags
@@ -795,14 +795,14 @@ class FlxTypedSpriteGroup<T:FlxSprite> extends FlxSprite
 	{
 		if (exists && color != Value)
 			transformChildren(gColorTransform, Value);
-		return color = Value;
+		return super.set_color(Value);
 	}
 
 	override function set_blend(Value:BlendMode):BlendMode
 	{
 		if (exists && blend != Value)
 			transformChildren(blendTransform, Value);
-		return blend = Value;
+		return super.set_blend(Value);
 	}
 
 	override function set_clipRect(rect:FlxRect):FlxRect
@@ -1196,9 +1196,4 @@ class FlxTypedSpriteGroup<T:FlxSprite> extends FlxSprite
 	{
 		return Frames;
 	}
-
-	/**
-	 * This functionality isn't supported in SpriteGroup
-	 */
-	override inline function updateColorTransform():Void {}
 }

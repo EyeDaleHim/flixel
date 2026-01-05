@@ -2,6 +2,8 @@ package flixel;
 
 import flixel.FlxBasic.IFlxBasic;
 import flixel.animation.FlxAnimationController;
+import flixel.ecs.components.FlxColorComponent;
+import flixel.ecs.components.FlxTransformComponent;
 import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxFrame;
 import flixel.graphics.frames.FlxFramesCollection;
@@ -214,7 +216,7 @@ class FlxSprite extends FlxObject
 	 * **NOTE:** This value is automatically clamped to 0 <= a <= 1
 	 @see https://snippets.haxeflixel.com/sprites/alpha/
 	 */
-	public var alpha(default, set):Float = 1.0;
+	public var alpha(get, set):Float;
 
 	/**
 	 * Can be set to `LEFT`, `RIGHT`, `UP`, and `DOWN` to take advantage
@@ -257,25 +259,19 @@ class FlxSprite extends FlxObject
 	/**
 	 * Blending modes, just like Photoshop or whatever, e.g. "multiply", "screen", etc.
 	 */
-	public var blend(default, set):BlendMode;
+	public var blend(get, set):BlendMode;
 	
 	/**
 	 * Multiplies this sprite's image by the given red, green and blue components, alpha is ignored.
 	 * To change the opacity use `alpha`. Calling `setColorTransform` will also change this value.
 	 * @see https://snippets.haxeflixel.com/sprites/color/
 	 */
-	public var color(default, set):FlxColor = FlxColor.WHITE;
+	public var color(get, set):FlxColor;
 	
 	/**
 	 * The color effects of this sprite, changes to `color` or `alpha` will be reflected here
 	 */
-	public var colorTransform(default, null) = new ColorTransform();
-
-	/**
-	 * Whether or not to use a `ColorTransform` set via `setColorTransform()`.
-	 */
-	@:deprecated("useColorTransform is deprecated, use hasColorTransform(), instead")// 6.1.0
-	public var useColorTransform(default, null):Bool = false;
+	public var colorTransform(get, never):ColorTransform;
 
 	/**
 	 * Clipping rectangle for this sprite.
@@ -380,6 +376,9 @@ class FlxSprite extends FlxObject
 	{
 		super(X, Y);
 
+		getComponent(FlxTransformComponent).strong();
+		addComponent(new FlxColorComponent());
+
 		useFramePixels = FlxG.renderBlit;
 		if (SimpleGraphic != null)
 			loadGraphic(SimpleGraphic);
@@ -434,8 +433,6 @@ class FlxSprite extends FlxObject
 		_flashRect2 = null;
 		_flashPointZero = null;
 		_matrix = null;
-		blend = null;
-
 		frames = null;
 		graphic = null;
 		_frame = FlxDestroyUtil.destroy(_frame);
@@ -1027,26 +1024,11 @@ class FlxSprite extends FlxObject
 	 * @param   blueOffset        The offset for the blue color channel value, in the range from `-255` to `255`.
 	 * @param   alphaOffset       The offset for alpha transparency channel value, in the range from `-255` to `255`.
 	 */
-	@:haxe.warning("-WDeprecated")
 	public function setColorTransform(redMultiplier = 1.0, greenMultiplier = 1.0, blueMultiplier = 1.0, alphaMultiplier = 1.0,
 			redOffset = 0.0, greenOffset = 0.0, blueOffset = 0.0, alphaOffset = 0.0):Void
 	{
-		alphaMultiplier = FlxMath.bound(alphaMultiplier, 0, 1);
-		@:bypassAccessor color = FlxColor.fromRGBFloat(redMultiplier, greenMultiplier, blueMultiplier, 1.0);
-		@:bypassAccessor alpha = alphaMultiplier;
-		
-		colorTransform.setMultipliers(redMultiplier, greenMultiplier, blueMultiplier, alphaMultiplier);
-		colorTransform.setOffsets(redOffset, greenOffset, blueOffset, alphaOffset);
-		useColorTransform = hasColorTransformRaw();
-		
-		dirty = true;
-	}
-	
-	@:haxe.warning("-WDeprecated")
-	function updateColorTransform():Void
-	{
-		colorTransform.setMultipliers(color.redFloat, color.greenFloat, color.blueFloat, alpha);
-		useColorTransform = hasColorTransformRaw();
+		getComponent(FlxColorComponent).setColorTransform(redMultiplier, greenMultiplier, blueMultiplier, alphaMultiplier, redOffset, greenOffset, blueOffset,
+			alphaOffset);
 		
 		dirty = true;
 	}
@@ -1055,18 +1037,9 @@ class FlxSprite extends FlxObject
 	 * Whether this sprite has a color transform, menaing any of the following: less than full
 	 * `alpha`, a `color` tint, or a `colorTransform` whos values are not the default.
 	 */
-	@:haxe.warning("-WDeprecated")
 	public function hasColorTransform()
 	{
-		return useColorTransform || hasColorTransformRaw();
-	}
-	
-	/**
-	 * Helper for the non-deprecated component of `hasColorTransform`
-	 */
-	function hasColorTransformRaw()
-	{
-		return alpha != 1 || color.rgb != 0xffffff || colorTransform.hasRGBAOffsets();
+		return getComponent(FlxColorComponent).hasColorTransform();
 	}
 	
 	/**
@@ -1524,26 +1497,40 @@ class FlxSprite extends FlxObject
 	}
 
 	@:noCompletion
-	function set_alpha(value:Float):Float
+	function get_alpha():Float
 	{
-		value = FlxMath.bound(value, 0, 1);
-		if (alpha == value)
-			return value;
-		
-		alpha = value;
-		updateColorTransform();
-		return alpha;
+		return getComponent(FlxColorComponent).alpha;
 	}
 
 	@:noCompletion
-	function set_color(value:FlxColor):Int
+	function set_alpha(value:Float):Float
 	{
-		if (color == value)
+		final col = getComponent(FlxColorComponent);
+		value = FlxMath.bound(value, 0, 1);
+		if (col.alpha == value)
 			return value;
 		
-		color = value;
-		updateColorTransform();
-		return color;
+		col.alpha = value;
+		dirty = true;
+		return col.alpha;
+	}
+
+	@:noCompletion
+	function get_color():FlxColor
+	{
+		return getComponent(FlxColorComponent).color;
+	}
+	
+	@:noCompletion
+	function set_color(value:FlxColor):FlxColor
+	{
+		final col = getComponent(FlxColorComponent);
+		if (col.color == value)
+			return value;
+		
+		col.color = value;
+		dirty = true;
+		return value;
 	}
 
 	@:noCompletion
@@ -1572,9 +1559,21 @@ class FlxSprite extends FlxObject
 	}
 
 	@:noCompletion
+	function get_blend():BlendMode
+	{
+		return getComponent(FlxColorComponent).blend;
+	}
+
+	@:noCompletion
 	function set_blend(Value:BlendMode):BlendMode
 	{
-		return blend = Value;
+		return getComponent(FlxColorComponent).blend = Value;
+	}
+	
+	@:noCompletion
+	function get_colorTransform():ColorTransform
+	{
+		return getComponent(FlxColorComponent).colorTransform;
 	}
 
 	/**
@@ -1731,7 +1730,7 @@ class FlxSprite extends FlxObject
 
 interface IFlxSprite extends IFlxBasic
 {
-	var alpha(default, set):Float;
+	var alpha(get, set):Float;
 	var angle(get, set):Float;
 	var facing(default, set):FlxDirectionFlags;
 	var moves(default, set):Bool;
