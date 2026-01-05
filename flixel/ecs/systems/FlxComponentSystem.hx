@@ -81,15 +81,16 @@ class FlxComponentSystem implements IFlxDestroyable
 	{
 		list ??= FlxG.state;
 		var entities:Array<FlxBasic> = [];
+
 		for (entity in list.members)
-		{
+		{				
 			if (all)
 			{
 				var hasAllComponents:Bool = true;
 				for (componentType in componentTypes)
 				{
-					var component = entity.getComponent(componentType);
-					if (component != null)
+					// If ANY component is missing, the entity fails the "all" check
+					if (entity.getComponent(componentType) == null)
 					{
 						hasAllComponents = false;
 						break;
@@ -102,8 +103,7 @@ class FlxComponentSystem implements IFlxDestroyable
 			{
 				for (componentType in componentTypes)
 				{
-					var component = entity.getComponent(componentType);
-					if (component != null)
+					if (entity.getComponent(componentType) != null)
 					{
 						entities.push(entity);
 						break;
